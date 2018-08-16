@@ -1,0 +1,117 @@
+import {
+    createStore,
+    applyMiddleware
+} from 'redux';
+import React, {
+    Component
+} from 'react';
+import {
+    render
+} from 'react-dom';
+import {
+    Provider,
+    connect
+} from 'react-redux'
+import thunk from 'redux-thunk';
+import './App.css';
+
+const GETCOMMENTS = 'GETCOMMENTS';
+
+const initalState = {
+    isLoading: true,
+    comments: []
+}
+const CommentsReducer = (state = initalState, action) => {
+    switch (action.type) {
+        case GETCOMMENTS:
+            return Object.assign({}, state, {
+                isLoading: !state.isLoading,
+                comments: action.comments
+            })
+        default:
+            break;
+    }
+    return state;
+
+}
+const logger = store => {
+    return next => {
+        return action => {
+            console.log('[Middleware] starts');
+            const result = next(action);
+            console.log('[Middleware] ends');
+            return result;
+
+        }
+    }
+}
+
+
+const store = createStore(CommentsReducer, applyMiddleware(logger,thunk));
+
+
+const GET_COMMENTS_MIDDLEWARE = url => {
+    return dispatch => {
+        console.log('%c Async Action ', 'color:red', 'starts!')
+        fetch(url)
+              .then(res => {
+                return res.json();
+        })
+        .then(comments => {
+                //wait logic here goes:
+                //dispatch willl call reducer when data is available.
+                dispatch({type:GETCOMMENTS,comments:comments});
+            });
+
+    }
+}
+
+const mapStateToProps= (state)=>{
+    return{
+        comments:state.comments,
+        isLoading:state.isLoading
+    }
+}
+class Comments extends Component{
+     
+    componentDidMount(){
+        const url="https://jsonplaceholder.typicode.com/comments"
+        this.props.dispatch(GET_COMMENTS_MIDDLEWARE(url))
+     }
+     render(){
+         const {comments,isLoading} = this.props;
+      
+         if(isLoading){
+             return (
+             <div className="container">
+                 <h1>Loading....</h1>
+             </div>
+            )
+         }
+
+         return(<div className="container">
+             <h1 className="heading">CommentsApp</h1>
+              <ul>
+              {
+                comments.map((comment,index)=>{
+                    return (<li key={index}><span>{comment.name}</span></li>)
+                })
+              }
+              </ul>
+         </div>);
+     }
+ }
+ const CommentHOC = connect(mapStateToProps)(Comments)
+
+ const App = ()=>(
+    <Provider store={store} >
+        <div>
+         <CommentHOC/>
+        </div>
+    </Provider>   
+   );
+   
+render(<App/>,root);
+ 
+
+ 

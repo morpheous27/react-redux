@@ -1,0 +1,213 @@
+import React, {
+    Component
+} from 'react';
+import {
+    render
+} from 'react-dom';
+import {
+    createStore,combineReducers
+} from 'redux';
+import {
+    Provider,
+    connect
+} from 'react-redux'
+import './App.css';
+import {productsMock} from './mock-data/productsMock'
+
+const LIKE='LIKE';
+const DISLIKE ='DISLIKE';
+const GET_PRODUCTS = 'GET_PRODUCTS';
+const SET_PRODUCT ='SET_PRODUCT';
+const ADD_PRODUCT ='ADD_PRODUCT';
+
+//Product Review x`
+const ReviewReducer = (reviewState = {like:0,dislike:0}, {
+    type
+}) => {
+    switch (type) {
+        case LIKE:
+        return Object.assign({}, reviewState, {
+            like: reviewState.like + 1
+        });
+         break;
+        case DISLIKE:
+        return Object.assign({}, reviewState, {
+            dislike: reviewState.dislike +1
+        });
+         break;
+        default:
+            return reviewState;
+            break;
+    }
+}
+
+
+
+const initalState = {
+    company:'TVS Next',
+    product:{
+            id: 2,
+            title: "H&M T-Shirt White",
+            price: 10.99,
+            inventory: 10      
+    },
+    products: productsMock
+};
+
+const ProductReducer = (state = initalState, {
+    type,title
+}) => {
+
+    switch (type) {
+        case GET_PRODUCTS:
+            return Object.assign({}, state, {
+                products: state.products.map(product => product)
+            });
+            break;
+       case SET_PRODUCT:
+          return Object.assign({}, state, {
+               product:{
+                    id : state.products.length +1,
+                    title:title,
+                    price: 10.99,
+                    inventory: 10
+              }
+          });
+          case ADD_PRODUCT:
+          return Object.assign({}, state, {
+              products: state.products.concat(state.product),
+              //reset logic
+              product:{
+                id : state.product.id,
+                title:'',
+                price: 10.99,
+                inventory: 10
+              }
+          });
+
+            break;
+        default:
+            return state;
+            break;
+    }
+}
+
+//coimbineReducer({r1:rvalue,r2:rvalue})
+const appReducer =combineReducers({ProductReducer,ReviewReducer});
+
+const store = createStore(appReducer);
+
+const GET_PRODUCTS_ACTION = {
+    type: GET_PRODUCTS
+};
+const ADD_PRODUCT_ACTION = product=>({
+    type:ADD_PRODUCT,
+    product
+});
+
+const mapStateToProps = state => {
+
+    return {
+    products: state.ProductReducer.products,
+    company:state.ProductReducer.company,
+    product:state.ProductReducer.product,
+    like: state.ReviewReducer.like
+  }
+} 
+/* const mapStateToProps = ({products ,company,product}) => ({
+    products,
+    company,
+    product   
+});  */
+
+/* const mapStateToProps = (state) => ({
+    products,
+    company,
+    product   
+}); */
+//container
+class ProductContainer extends Component{
+
+    //Add new Product logic
+    onSubmit =e=>{
+        e.preventDefault();
+          //validation code for avoiding empty product title to be added.
+        if (!this.props.product.title) {
+           alert('Product title empty!')
+           return;
+       }
+  
+        const product = {
+            id: 3,
+            title: this.props.product.title,
+            price: 500.01,
+            inventory: 2
+        };
+        this.props.dispatch(ADD_PRODUCT_ACTION(product));
+    }
+    render(){
+        console.log(this.props);
+        return(
+            <div className="container">
+            <h1>{this.props.company}</h1>
+            <h2>{this.props.title}</h2> 
+            <div className="card-body border-bottom-4">
+            <form onSubmit={this.onSubmit}>
+
+            <input onChange={e=>{
+             const title=e.target.value;
+              //set textbox value as redux state
+              const SET_PRODUCT_ACTION_CREATOR = title=>{
+                 return {type:SET_PRODUCT, title:title};
+              }
+              this.props.dispatch(SET_PRODUCT_ACTION_CREATOR(title));
+             }}
+             className="form-control"
+             type="text"
+             value={this.props.product.title}
+             placeholder="Product Title...."
+            />
+             <button type="submit" className="mt-2 btn btn-primary">
+                      Submit
+            </button>
+           </form>
+             {/** Presentational Component**/}
+               <ProductList {...this.props}/>
+            </div>
+            </div>
+        );
+
+    }
+}
+////////////////////////////////////////////////////////////////////////////
+//Presentational Components
+const ProductList =({products,like})=>(
+    <div>
+      {products.map((product, index) => (
+        <div key={index} className="card card-block mt-2">
+             <Product like={like}  product={product}/>
+        </div>
+      ))}
+    </div>
+);
+const Product = ({product,like})=>(
+  <div><h4 className="card-title">
+   <span className="badge badge-pill badge-dark">{product.id}</span>
+  </h4>
+  <p className="card-text">{product.title}</p>
+  <p className="card-text">Like {like}</p>
+
+
+</div>);
+////////////////////////////////////////////////////////////////////////////
+
+const ProductContainerHOC = connect(mapStateToProps)(ProductContainer);
+/////////////////////////////////////////////////////////////////////////
+
+const App = ()=>(
+    <Provider store={store}>
+       <ProductContainerHOC title="Product Management App" />
+    </Provider>
+);
+
+render(<App/>,root);

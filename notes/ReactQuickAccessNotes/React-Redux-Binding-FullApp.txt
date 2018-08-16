@@ -1,0 +1,160 @@
+import React, {
+    Component
+} from 'react';
+import {
+    render
+} from 'react-dom';
+import {
+    createStore
+} from 'redux';
+import {
+    Provider,
+    connect
+} from 'react-redux'
+import './App.css';
+import {productsMock} from './mock-data/productsMock'
+
+const GET_PRODUCTS = 'GET_PRODUCTS';
+const SET_PRODUCT ='SET_PRODUCT';
+const ADD_PRODUCT ='ADD_PRODUCT';
+
+const initalState = {
+    company:'TVS Next',
+    product:{
+            id: 2,
+            title: "H&M T-Shirt White",
+            price: 10.99,
+            inventory: 10      
+    },
+    products: productsMock
+};
+
+const ProductReducer = (state = initalState, {
+    type,title
+}) => {
+
+    switch (type) {
+        case GET_PRODUCTS:
+            return Object.assign({}, state, {
+                products: state.products.map(product => product)
+            });
+            break;
+       case SET_PRODUCT:
+          return Object.assign({}, state, {
+               product:{
+                    id : state.product.id,
+                    title:title,
+                    price: 10.99,
+                    inventory: 10
+              }
+          });
+          case ADD_PRODUCT:
+          return Object.assign({}, state, {
+              products: state.products.concat(state.product),
+              //reset logic
+              product:{
+                id : state.product.id,
+                title:'',
+                price: 10.99,
+                inventory: 10
+              }
+          });
+
+            break;
+        default:
+            return state;
+            break;
+    }
+}
+const store = createStore(ProductReducer);
+
+const GET_PRODUCTS_ACTION = {
+    type: GET_PRODUCTS
+};
+const ADD_PRODUCT_ACTION = product=>({
+    type:ADD_PRODUCT,
+    product
+});
+/* 
+const mapStateToProps = state => ({
+    products: state.products
+}); */
+const mapStateToProps = ({products ,company,product}) => ({
+    products,
+    company,
+    product    
+}); 
+//container
+class ProductContainer extends Component{
+
+    //Add new Product logic
+    onSubmit =e=>{
+        e.preventDefault();
+        const product = {
+            id: 1,
+            title: this.props.product.title,
+            price: 500.01,
+            inventory: 2
+        };
+        this.props.dispatch(ADD_PRODUCT_ACTION(product));
+    }
+    render(){
+        return(
+            <div className="container">
+            <h1>{this.props.company}</h1>
+            <h2>{this.props.title}</h2> 
+            <div className="card-body border-bottom-4">
+            <form onSubmit={this.onSubmit}>
+
+            <input onChange={(e)=>{
+                        const value=e.target.value;
+                                        
+                        this.props.dispatch({type:SET_PRODUCT,
+                         title:value
+                        })
+             }}
+             className="form-control"
+             type="text"
+             value={this.props.product.title}
+             placeholder="Product Title...."
+            />
+             <button type="submit" className="mt-2 btn btn-primary">
+                      Submit
+            </button>
+           </form>
+               <ProductList {...this.props}/>
+            </div>
+            </div>
+        );
+
+    }
+}
+////////////////////////////////////////////////////////////////////////////
+//Presentational Components
+const ProductList =({products})=>(
+    <div>
+      {products.map((product, index) => (
+        <div key={index} className="card card-block mt-2">
+             <Product  product={product}/>
+        </div>
+      ))}
+    </div>
+);
+const Product = ({product})=>(
+  <div><h4 className="card-title">
+   <span className="badge badge-pill badge-dark">{product.id}</span>
+  </h4>
+  <p className="card-text">{product.title}</p>
+</div>);
+////////////////////////////////////////////////////////////////////////////
+
+const ProductContainerHOC = connect(mapStateToProps)(ProductContainer);
+/////////////////////////////////////////////////////////////////////////
+
+const App = ()=>(
+    <Provider store={store}>
+       <ProductContainerHOC title="Product Management App" />
+    </Provider>
+);
+
+render(<App/>,root);

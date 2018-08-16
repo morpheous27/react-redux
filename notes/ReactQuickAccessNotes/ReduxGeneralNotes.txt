@@ -1,0 +1,313 @@
+
+
+www.flipkart.com ------------>
+
+index.html
+
+markup -html
+    ajax-------------------------------------
+ render()
+
+npm install flux
+
+Redux  = red - {Reducer + Flux} = Redux  =State Manager /State Container
+                 |
+              Pure Function
+		 |
+             Immutable logic
+                 |
+            Biz /Data Logic
+
+Redux uses concept called "Single source of truth"
+
+Redux manages all application data(state) in one place
+ {
+   isActive: true
+   isActive : false
+   isActive :true
+   isActive : false
+
+ }
+Why Redux?
+
+One of the benefits of Redux is that it makes state changes predictable and transparent. Every time an action is dispatched, the new state is computed and saved. The state cannot change by itself, it can only change as a consequence of a specific action.
+
+
+state transition
+Is Active Button - click - true
+                         -false
+                         -true
+                         -false
+
+
+Application Architecture:Flux  based Architecture.
+
+
+  src
+    |
+    view(react)
+      |
+      components - jsx 
+
+    state(redux)
+       |
+       action
+       actionconstants
+       reducer
+       services
+    index.js - store
+
+  app.js
+  index.js
+redux is just reference implementation of flux design pattern.
+
+>npm install redux
+
+Redux(Flux) Core components(parts)
+
+1.reducer
+    It is pure function,does biz logic and return data(state)
+2.action
+    It is message.
+    How to perform biz logic
+  action is represented is just literal object
+
+  action = {
+   type:'INCREMNT',
+   
+  }
+  action = {
+   type:'ADD_PROFILE',
+   newProfile:{
+     id:2,
+     name:'subramanian
+   }
+
+  }
+ newProfile is called payload, or input to biz logic
+
+
+Store:
+	Built in Object
+
+Role:
+>Controlling data flow
+api
+>dispatch
+>getState
+>subscribe -
+
+>Will keep the Whole application Data 
+
+
+Action Name:
+>Action must be capital letters
+>action must be saved separatly.
+
+
+
+Action creator:
+ It is just function which returns action object.
+
+ const appState = { 
+  
+   ReviewReducer:{
+      counter:0
+   }
+   ProductReducer:{}
+   CustomerReducer:{}
+
+ }
+
+Design Principle:
+Presentational and Container Components
+
+React bindings for Redux embrace the idea of separating presentational and container components.
+
+	
+Presentational Components
+
+Container Components
+
+https://paste.ubuntu.com/p/ZXFjw8dB3q/
+
+
+Create Product List Reducer
+
+const productsMock=[
+  {"id": 1, "title": "iPad 4 Mini", "price": 500.01, "inventory": 2},
+  {"id": 2, "title": "H&M T-Shirt White", "price": 10.99, "inventory": 10},
+  {"id": 3, "title": "Charli XCX - Sucker CD", "price": 19.99, "inventory": 5}
+]
+
+const initalState ={
+   products:productsMock
+}
+Task:
+>Create Reducer which returns products -GET_PRODUCTS
+>Create store
+>create action
+>create Container Component -ProductContainer
+>create PresentationalComponent - ProductList
+
+
+import React, {
+    Component
+} from 'react';
+import {
+    render
+} from 'react-dom';
+import {
+    createStore
+} from 'redux';
+import {
+    Provider,
+    connect
+} from 'react-redux'
+import {
+    INCREMENT,
+    DECREMENT
+} from './constants/counterconstants';
+/**
+ * Steps
+ * 1.Redux Layer
+ */
+
+const initalState ={
+    counter:0
+}
+const ReviewReducer = (state = initalState, {
+    type
+}) => {
+    switch (type) {
+        case INCREMENT:
+        return Object.assign({}, state, {
+            counter: state.counter + 1
+        });
+            break;
+        case DECREMENT:
+        return Object.assign({}, state, {
+            counter: state.counter -1
+        });
+            break;
+
+        default:
+            return state;
+            break;
+    }
+}
+const store = createStore(ReviewReducer);
+
+//actions
+const INCREMENT_ACTION ={
+    type:INCREMENT
+}
+const DECREMENT_ACTION ={
+    type:DECREMENT
+}
+/////////////////////////////////////////////////////////////////////////////////
+//Filtering logic
+//stateToProps : Redux state becomes prop to React
+/* function mapStateToProps(counter){
+   //return literal object: mapping Object
+   return{
+       //Lefside:rightSIde
+       //React:Redux
+       //React Prop Variable: Redux state variable
+        //prop:state
+       reviewValue:counter
+   }
+} */
+//const mapStateToProps = counter =>({counter:counter});
+//const mapStateToProps = counter =>({counter});
+///////////////////////////////////////////////////////////////////////////
+//Create Component
+class ReviewComponent extends Component {
+    
+  render() {
+      console.log(this.props);
+    return (
+      <div className="container">
+        <h1>Review Application by React-Redux</h1>
+        {/* <p className="badge badge-secondary">{this.props.reviewValue}</p>
+        <button onClick={()=>{this.props.dispatch(INCREMENT_ACTION)}}>INCREMENT</button> */}
+        <Review {...this.props}/>
+        <br />
+      </div>
+    );
+  }
+}
+//presental Component
+const Review=({counter,dispatch})=>{
+    return(<div><p className="badge badge-secondary">{counter}</p>
+    <button onClick={()=>{dispatch(INCREMENT_ACTION)}}>INCREMENT</button></div>);
+}
+//curry function: HOF - higherorder functions 
+/* const myFun = function(a){
+    return function(b){
+        return function(c){
+            return `${a} ${b} ${c}`;
+        }
+    }
+}; */
+
+const myFun =a=>b=>c=>`${a} ${b} ${c}`;
+
+ let finalProduct=myFun('subramanian')('loves')('React')
+ console.log(finalProduct);
+//create HOC
+
+//const ReviewHOCComponent = connect(mapStateToProps)(ReviewComponent);
+const ReviewHOCComponent = connect(state =>({counter:state.counter}))(ReviewComponent);
+
+render(<Provider store={store}>
+    <ReviewHOCComponent/>
+    </Provider>
+,root);
+
+
+
+>Create Sub PresentaionalComponent - Product
+>Inside product display product data.
+
+Forms and Redux:
+
+ <input onChange={e=>{
+     const value =e.target.value
+     //assign textbox value to Redux state variable
+     
+ }}
+
+ <input  ref="productname" />
+ <input  ref="price" />
+
+onSubmit=e =>{
+
+ const pname = this.refs.productname.value;
+ const price = this.refs.price.value;
+ const product ={
+     id:1,
+     name:pname,
+    price:price
+ 
+ }
+ this.props.dispatch(ADD_PRODUCT_ACTION(product)
+}
+
+
+Middleware:
+Wouldn't it be nice if we logged every action that happens in the app, together with the state computed after it? When something goes wrong, we can look back at our log, and figure out which action corrupted the state.
+
+
+Async Programming:
+
+ >Redux-thunk
+ >Redux-promise
+ >Redux-saga
+ >Redux-observerables
+
+
+
+
+
+

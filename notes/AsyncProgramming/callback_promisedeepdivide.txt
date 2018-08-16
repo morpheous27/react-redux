@@ -1,0 +1,237 @@
+Async Programming Implementation:
+.................................
+
+callbacks:
+
+//Async Programming
+
+const getUser = (success, failure) => {
+    const fakeuser = {
+        name: 'Subramanian'
+    }
+    if (fakeuser) {
+        setTimeout(() => {
+            success(fakeuser)
+        }, 2000);
+    } else {
+        setTimeout(() => {
+            failure({
+                err: 'User not Available'
+            })
+        }, 2000);
+    }
+
+};
+const sucess = user => console.log(user.name);
+const failure = err => console.log(err);
+getUser(sucess, failure);
+
+without variables
+
+getUser(user => console.log(user.name), err => console.log(err));
+
+
+Callback Hell:
+//Async Programming
+
+const getUser = (success, failure) => {
+    const fakeuser = {
+        name: 'Subramanian'
+    }
+    if (fakeuser) {
+        setTimeout(() => {
+            success(fakeuser)
+        }, 2000);
+    } else {
+        setTimeout(() => {
+            failure({
+                err: 'User not Available'
+            })
+        }, 2000);
+    }
+
+};
+
+const login = (user, success, failure) => {
+    if (user.name === 'Subramanian') {
+        setTimeout(() => success({
+            loginsuccess: 'valid User'
+        }), 1000);
+    } else {
+        setTimeout(() => failure({
+            err: 'Invaild User'
+        }), 1000);
+    }
+}
+const dashboard = () => {
+    console.log('Welcome to Dash board');
+}
+const errorPage = () => {
+    console.log('Welcome to login Page');
+}
+getUser(user => {
+    login(user, loginsuccess => {
+        //console.log(loginsuccess);
+        dashboard()
+    }, loginfaild => {
+        //console.log(loginfaild);
+        errorPage();
+    });
+}, err => console.log(err));
+
+///////////////////////////////////////////////////////////////
+Using Promise:
+/* //callback and promise
+/* 
+const getUser = cb => {
+    setTimeout(() => {
+        cb({
+            name: 'Max'
+        })
+    }, 1000);
+};
+
+/* const user = getUser(); // This doesn't actually fetch the user
+console.log(user.name); // This won't work */
+/* getUser((user) => {
+    console.log(user.name); // Prints 'Max' after 2 seconds
+})  */
+//Promise(resove, reject)
+/* const getUser = () => {
+    return new Promise(resolve => {
+        //async code
+        setTimeout(() => {
+            resolve({
+                name: 'Subramanian'
+            });
+        }, 2000);
+    });
+}; */
+/* const promise = getUser();
+promise.then(user => console.log(user.name)); */
+//getUser().then(user => console.log(user.name)); */
+
+//callback hell /nested callbacks:
+/* Async Programming Implementation:
+    .................................
+
+    callbacks:
+
+    //Async Programming
+
+    const getUser = (success, failure) => {
+        const fakeuser = {
+            name: 'Subramanian'
+        }
+        if (fakeuser) {
+            setTimeout(() => {
+                success(fakeuser)
+            }, 2000);
+        } else {
+            setTimeout(() => {
+                failure({
+                    err: 'User not Available'
+                })
+            }, 2000);
+        }
+
+    };
+const sucess = user => console.log(user.name);
+const failure = err => console.log(err);
+getUser(sucess, failure);
+
+without variables
+
+getUser(user => console.log(user.name), err => console.log(err)); */
+
+
+//Callback Hell:
+//Async Programming
+
+const getUser = () => {
+    const fakeuser = {
+        name: 'Ram'
+    }
+    /*     if (fakeuser) {
+            setTimeout(() => {
+                success(fakeuser)
+            }, 2000);
+        } else {
+            setTimeout(() => {
+                failure({
+                    err: 'User not Available'
+                })
+            }, 2000);
+        } */
+    return new Promise((resolve, reject) => {
+        const fakeuser = {
+            name: 'Subramanian'
+        };
+        if (fakeuser) {
+            setTimeout(() => {
+                resolve(fakeuser)
+            }, 2000);
+        } else {
+            setTimeout(() => {
+                reject({
+                    err: 'User not Available'
+                })
+            }, 2000);
+        }
+    });
+
+};
+
+const login = user => {
+    /*    if (user.name === 'Subramanian') {
+           setTimeout(() => success({
+               loginsuccess: 'valid User'
+           }), 1000);
+       } else {
+           setTimeout(() => failure({
+               err: 'Invaild User'
+           }), 1000);
+       } */
+    return new Promise((resolve, reject) => {
+        if (user.name === 'Subramanian') {
+            setTimeout(() => resolve({
+                loginsuccess: 'valid User'
+            }), 1000);
+        } else {
+            setTimeout(() => reject({
+                err: 'Invaild User',
+                code: 400,
+            }), 1000);
+        }
+    });
+}
+const dashboard = () => {
+    console.log('Welcome to Dash board');
+}
+const errorPage = () => {
+    console.log('Welcome to login Page');
+}
+/* getUser(user => {
+    login(user, loginsuccess => {
+        //console.log(loginsuccess);
+        dashboard()
+    }, loginfaild => {
+        //console.log(loginfaild);
+        errorPage();
+    });
+}, err => console.log(err)); */
+/* getUser()
+    .then(user => console.log(user.name))
+    .catch(err => console.log(err)) */
+
+getUser()
+    .then(user => login(user))
+    .then(() => dashboard())
+    .catch(err => {
+        if (err.code === 200) {
+            errorPage();
+            return;
+        }
+        console.log(err)
+    })
+

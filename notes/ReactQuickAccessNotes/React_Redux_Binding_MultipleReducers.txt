@@ -1,0 +1,94 @@
+import React, {
+    Component
+} from 'react';
+import {
+    render
+} from 'react-dom';
+import {
+    createStore,
+    combineReducers
+} from 'redux';
+import {
+    Provider,
+    connect
+} from 'react-redux'
+import './App.css';
+
+//constants
+const LIKE = 'LIKE';
+const DISLIKE = 'DISLIKE';
+
+const LikeReducer = (like = 0, action) => {
+    switch (action.type) {
+        case LIKE:
+            return like + 1;
+        default:
+            return like;
+    }
+}
+const DislikeReducer = (dislike = 0, action) => {
+    switch (action.type) {
+        case DISLIKE:
+            return dislike + 1;
+        default:
+            return dislike;
+    }
+}
+
+const rootReducer =combineReducers({LikeReducer,DislikeReducer});
+
+const store = createStore(rootReducer);
+
+/* store.subscribe(function(){
+    console.log(store.getState());
+})
+store.dispatch({type:LIKE})
+store.dispatch({type:DISLIKE}); */
+
+class Like extends Component{
+    render(){
+        console.log(this.props)
+        const {dispatch} =this.props;
+        return(<div className="container">
+             <h1>Like Component {this.props.like}</h1>
+             <button onClick={()=>dispatch({type:LIKE})}>
+             Like</button>     
+         </div>);
+     }
+}
+
+const LikeMapper = state=>{
+    return{
+        like: state.LikeReducer
+    }
+}
+const LikeHOC = connect(LikeMapper)(Like)
+//////////////////////////////////////////////////////////////
+class DisLike extends Component{
+    render(){
+        console.log(this.props)
+        const {dispatch} =this.props;
+        return(<div className="container">
+             <h1>Dislike Component {this.props.dislike}</h1>  <button onClick={()=>dispatch({type:DISLIKE})}>
+             DisLike</button>          
+         </div>);
+     }
+}
+const DislikeMapper = (state)=>{
+    return{
+        dislike: state.DislikeReducer
+    }
+}
+const DisLikeHOC = connect(DislikeMapper)(DisLike)
+
+
+const App = ()=>(
+ <Provider store={store} >
+     <div>
+      <LikeHOC/>
+      <DisLikeHOC/>
+     </div>
+ </Provider>   
+);
+
+render(<App/>,root);

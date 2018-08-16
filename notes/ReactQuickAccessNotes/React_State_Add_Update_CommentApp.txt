@@ -1,0 +1,165 @@
+/**
+ * state
+ */
+import React,{Component} from 'react';
+import {render} from 'react-dom';
+import "./App.css";
+
+
+
+class Profile extends Component{
+   
+    state = {
+        id:1,
+        name:'Subramaian',
+        like:0,
+        dislike:0,
+        comment:'',
+        comments:[]
+    };
+    //instance method:event Listener
+    onLike = ()=>{
+      console.log('event is triggered');
+      //this.setState({like:thi s.state.like + 1});
+     /*  this.setState(function(prvState){
+             return {
+                 like:prvState.like+1
+             };
+      }); */
+      this.setState(prvState=>({like:prvState.like+1}));       
+ 
+    }
+    onTextChange = e=>{
+        const inputBox = e.currentTarget;
+       this.setState((prvState=>({comment:inputBox.value})));
+    }
+    onDisLike = () => {
+        const dislike = this.state.dislike + 1;
+        this.setState({ dislike });
+      };
+    
+    onCommentSubmit = e =>{
+        e.preventDefault();
+      
+
+    //validation code for avoiding empty comments to be added.
+    if (!this.state.comment.length) {
+        return;
+      }
+  
+
+        const newComment = {
+            value:this.state.comment
+        };
+        console.log(newComment);
+        this.setState(prvState=>{
+            return {
+                comments:prvState.comments.concat(newComment),
+                comment:""
+            }
+        })
+    }
+    onDelete = (index)=>{
+      this.setState(({comments})=>{
+        //const comments = prvState.comments;
+        console.log(comments)
+        return{
+         // comments:prvState.comments.slice(0, index).concat(prvState.comments.slice(index + 1))
+           comments:[
+            ...comments.slice(0, index),
+            ...comments.slice(index + 1)
+           ]
+        }
+      })
+    }
+ 
+    render(){
+     //console.log(this.state);
+     //props are read only: dont change prop value inside component
+     //this.props.title = 'HR Manager App';
+     const {id,name,like,dislike,comment} = this.state;
+        return (<div className="container">
+          <h1>{this.props.title}</h1> 
+         <div className="card-body border-bottom-4">
+         <DisplayBoard
+                {...this.state}
+                onLike={this.onLike}
+                onDisLike={this.onDisLike}
+         />
+
+          <div>
+    
+             <div className="mt-4 col-md-12">
+                <form onSubmit={this.onCommentSubmit}>
+                  <div className="form-group mb-4">
+                    <input
+                      onChange={this.onTextChange}
+                      className="form-control"
+                      type="text"
+                      value={this.state.comment}
+                      placeholder="Type Comment...."
+                    />
+                    <button type="submit" className="mt-2 btn btn-primary">
+                      Submit
+                    </button>
+                  </div>
+                </form>
+                </div>
+                
+                <div className="col-md-12">
+               {/*    {   
+                    <ul>
+                      {this.state.comments.map((comment, index) => (
+                        <li key={index}>
+                          <span>{comment.value}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  } */}
+                  
+                  <CommentsList onDelete={this.onDelete} {...this.state} />
+                </div>
+        
+        </div>
+    </div>
+         </div>);
+    }
+}
+
+//stateless component
+const DisplayBoard = ({ name, like, dislike, onLike, onDisLike }) => (
+    <div className="card">
+      <div className="card-body">
+        <h5 className="card-title">{name}</h5>
+        <p className="card-text">
+          Like {like} Dislike {dislike}
+        </p>
+        <button onClick={onLike} className="mr-4 btn btn-primary">
+          Like
+        </button>
+        <button onClick={onDisLike} className="mr-4 btn btn-primary">
+          DisLike
+        </button>
+      </div>
+    </div>
+  );
+  const CommentsList = ({ comments,onDelete }) => (
+    <div>
+      {comments.map((comment, index) => (
+        <div key={index} className="card card-block mt-2">
+          <h4 className="card-title">
+            <span className="badge badge-pill badge-dark">{index}</span>
+          </h4>
+          <p className="card-text">{comment.value}</p>
+          <button onClick={()=>onDelete(index)} className="btn btn-danger">Delete</button>
+        </div>
+      ))}
+    </div>
+  );
+  
+  
+
+render(<Profile title="HR Manager Application" />,root);
+
+
+
