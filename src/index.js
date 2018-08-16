@@ -1,40 +1,71 @@
-import React, { Component, Fragment } from "react";
+import { createStore } from "redux";
+import React, { Component } from "react";
 import { render } from "react-dom";
+import { Provider, connect } from "react-redux";
 
-//const ThemeContext = React.createContext('dark');
-const { Provider, Consumer } = React.createContext("dark");
+import {
+    INCREMENT,
+    DECREMENT,
+    DECREMENT_ACTION,
+    INCREMENT_ACTION
+  } from "./actions";
 
-class App extends Component {
-  theme = {
-    backgroundColor: "yellow",
-    color: "white"
+  
+const CounterReduer = (counter = 10, action) => {
+  switch (action.type) {
+    case INCREMENT:
+      return counter + 1;
+    case DECREMENT:
+      return counter - 1;
+    default:
+      return counter;
+  }
+};
+const appStore = createStore(CounterReduer);
+////////////////////////////////////////////////
+//Mapping:
+function mapStateToProps(counter) {
+  return {
+    counter
   };
+}
+
+//Dispatcher mapping
+
+function mapDispatchToProps(dispatch) {
+  return {
+    //reactProp:reduxState
+    onInCrement: function() {
+      dispatch(INCREMENT_ACTION);
+    },
+    onDeCrement: function() {
+      dispatch(DECREMENT_ACTION);
+    }
+  };
+}
+//Container Components
+class Counter extends Component {
   render() {
-    return (
-      <Provider value={this.theme}>
-        <Toolbar />
-      </Provider>
-    );
+    console.log(this.props);
+    return <CounterDisplayBoard {...this.props} />;
   }
 }
-
-function Toolbar(props) {
-  // The Toolbar component must take an extra "theme" prop
-  // and pass it to the ThemedButton. This can become painful
-  // if every single button in the app needs to know the theme
-  // because it would have to be passed through all components.
-  return (
-    <div>
-      <ThemedButton />
-    </div>
-  );
-}
-
-function ThemedButton(props) {
-  return <Consumer>{theme => <Button theme={theme} />}</Consumer>;
-}
-function Button(props) {
-  return <button style={props.theme}>Theme</button>;
-}
-
+//Create HOC :Container Component:
+const CounterApp = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Counter);
+const CounterDisplayBoard = ({ counter, onInCrement, onDeCrement }) => (
+  <div>
+    <h1>Counter React-Redux</h1>
+    <h2>Counter {counter}</h2>
+    <button onClick={onInCrement}>Increment</button>
+    <button onClick={onDeCrement}>Decrement</button>
+  </div>
+);
+const App = () => (
+  <Provider store={appStore}>
+    <CounterApp />
+  </Provider>
+);
 render(<App />, root);
